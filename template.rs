@@ -3,9 +3,8 @@ use std::{
     io::{self, BufRead},
     fs::File,
     error::Error,
+    string::String,
 };
-
-
 
 fn main() -> Result<(), Box<dyn Error>> {
     let args: Vec<String> = env::args().collect();
@@ -16,9 +15,10 @@ fn main() -> Result<(), Box<dyn Error>> {
     let file = File::open(&input_file)?;
     let input = io::BufReader::new(file);
 
+    let mut lines = vec!();
     for line in input.lines() {
-        println!("{}", line?);
-        todo!()
+        lines.push(line.unwrap());
     }
+    todo!()
     Ok(())
 }
