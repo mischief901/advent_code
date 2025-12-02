@@ -1,11 +1,9 @@
 use std::{
-    collections::HashMap,
     env,
     io::{self, BufRead},
-    iter,
     fs::File,
     error::Error,
-    process,
+    string::String,
 };
 
 
@@ -19,55 +17,60 @@ fn main() -> Result<(), Box<dyn Error>> {
     let file = File::open(&input_file)?;
     let input = io::BufReader::new(file);
 
-    let mut a = vec!();
-    let mut b = vec!();
-
-    let mut b_hash = HashMap::new();
-    //let mut count = 0;
-
+    let mut lines = vec!();
     for line in input.lines() {
-        let line = line?.to_owned();
-        let mut items = line.split_whitespace();
-        match (items.next(), items.next()) {
-            (Some(a_int), Some(b_int)) => {
-                a.push(a_int.parse::<u64>()?);
-                let b_temp = b_int.parse::<u64>()?;
-                if b_hash.contains_key(&b_temp) {
-                    let Some(b_count) = b_hash.get_mut(&b_temp) else {panic!()};
-                    *b_count += 1;
-                } else {
-                    b_hash.insert(b_temp, 1);
-                }
-                b.push(b_temp);
-                //count += 1;
-            }
-            (_, _) => {
-                eprintln!("Invalid line");
-                process::exit(1);
-            }
-        }
+        lines.push(line.unwrap());
     }
-    //println!("{count:?}");
-    a.as_mut_slice().sort();
-    b.as_mut_slice().sort();
-    let mut total = 0;
     
-    for (a, b) in iter::zip(a.clone(), b) {
-        total += a.abs_diff(b);
-    }
-    println!("part 1: {total}");
-    total = 0;
-    for a_value in a.into_iter() {
-        match b_hash.get(&a_value) {
-            Some(b_count) => {
-                total += a_value * b_count;
-            }
-            None => {
-                ()
-            }
+    let mut dial: i16 = 50;
+    let mut zeros = 0;
+    for line in lines.clone() {
+        let (dir, dist) = line.split_at(1);
+        let count = dist.parse::<i16>().unwrap();
+
+        if dir == "L" {
+            dial -= count;
+            dial += 100;
+            dial %= 100;
+        } else {
+            dial += count;
+            dial %= 100;
+        }
+        if dial == 0 {
+            zeros += 1;
         }
     }
+    println!("count: {}", zeros);
 
-    println!("part 2: {total}");
+    let mut dial2: i16 = 50;
+    let mut zeros2 = 0;
+    for line in lines {
+        let (dir, dist) = line.split_at(1);
+        let count = dist.parse::<i16>().unwrap();
+        if dir == "L" {
+            let mut next = dial2 - count;
+            if next <= 0 {
+                while next <= 0 {
+                    zeros2 += 1;
+                    next += 100;
+                }
+            }
+            if dial2 == 0 {
+                zeros2 -= 1;
+            }
+            dial2 = next % 100;
+        } else {
+            let mut next = dial2 + count;
+            if next >= 100 {
+                while next >= 100 {
+                    zeros2 += 1;
+                    next -= 100;
+                }
+            }
+            dial2 = next;
+        }
+    }    
+    println!("count2: {}", zeros2);
+    
     Ok(())
 }
